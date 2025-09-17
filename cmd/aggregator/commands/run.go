@@ -7,7 +7,6 @@ import (
 	"github.com/BlockPILabs/aggregator/middleware/plugins"
 	"github.com/BlockPILabs/aggregator/server"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/sync/errgroup"
 )
 
 func RunCommand() *cli.Command {
@@ -36,14 +35,8 @@ func RunCommand() *cli.Command {
 			return nil
 		},
 		Action: func(context *cli.Context) error {
-			wg := errgroup.Group{}
-			wg.Go(func() error {
-				return server.NewManageServer()
-			})
-			wg.Go(func() error {
-				return server.NewServer()
-			})
-			return wg.Wait()
+			// Start unified server that handles both RPC and management endpoints
+			return server.NewServer()
 		},
 		Subcommands: []*cli.Command{},
 	}

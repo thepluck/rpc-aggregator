@@ -4,21 +4,22 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"net/http"
+
 	"github.com/BlockPILabs/aggregator/config"
 	"github.com/BlockPILabs/aggregator/loadbalance"
 	"github.com/BlockPILabs/aggregator/notify"
 	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
-	"net/http"
 )
 
-var basicAuthPrefix = []byte("Basic ")
+var BasicAuthPrefix = []byte("Basic ")
 
-func rootHandler(ctx *fasthttp.RequestCtx) {
+func RootHandler(ctx *fasthttp.RequestCtx) {
 	ctx.WriteString("hello!")
 }
 
-func statusHandler(ctx *fasthttp.RequestCtx) {
+func StatusHandler(ctx *fasthttp.RequestCtx) {
 	st := map[string]any{}
 	st["mrt"] = config.Default().Mrt
 	data, _ := json.Marshal(st)
@@ -26,13 +27,13 @@ func statusHandler(ctx *fasthttp.RequestCtx) {
 	ctx.Write(data)
 }
 
-func routeConfigHandler(ctx *fasthttp.RequestCtx) {
+func RouteConfigHandler(ctx *fasthttp.RequestCtx) {
 	data, _ := json.Marshal(config.Default())
 	ctx.Response.Header.Set("Content-Type", "application/json")
 	ctx.Write(data)
 }
 
-func routeUpdateConfigHandler(ctx *fasthttp.RequestCtx) {
+func RouteUpdateConfigHandler(ctx *fasthttp.RequestCtx) {
 	cfg := config.Config{}
 	err := json.Unmarshal(ctx.Request.Body(), &cfg)
 	if err != nil {
@@ -64,7 +65,7 @@ func routeUpdateConfigHandler(ctx *fasthttp.RequestCtx) {
 	ctx.Write(data)
 }
 
-func routeRestoreConfigHandler(ctx *fasthttp.RequestCtx) {
+func RouteRestoreConfigHandler(ctx *fasthttp.RequestCtx) {
 	config.LoadDefault()
 
 }
@@ -75,11 +76,11 @@ func NewManageServer() error {
 		ctx.Error("Internal server error", fasthttp.StatusInternalServerError)
 	}
 
-	r.GET("/", rootHandler)
-	r.GET("/status", statusHandler)
-	r.GET("/config", routeConfigHandler)
-	r.POST("/config", routeUpdateConfigHandler)
-	r.POST("/config/restore", routeRestoreConfigHandler)
+	r.GET("/", RootHandler)
+	r.GET("/status", StatusHandler)
+	r.GET("/config", RouteConfigHandler)
+	r.POST("/config", RouteUpdateConfigHandler)
+	r.POST("/config/restore", RouteRestoreConfigHandler)
 
 	addr := ":8012"
 	logger.Info("Starting management server", "addr", addr)
@@ -104,8 +105,8 @@ func NewManageServer() error {
 			}
 
 			auth := ctx.Request.Header.Peek("Authorization")
-			if bytes.HasPrefix(auth, basicAuthPrefix) {
-				payload, err := base64.StdEncoding.DecodeString(string(auth[len(basicAuthPrefix):]))
+			if bytes.HasPrefix(auth, BasicAuthPrefix) {
+				payload, err := base64.StdEncoding.DecodeString(string(auth[len(BasicAuthPrefix):]))
 				if err == nil {
 					pair := bytes.SplitN(payload, []byte(":"), 2)
 					if len(pair) == 2 && bytes.Equal(pair[0], []byte("rpchub")) && bytes.Equal(pair[1], []byte(config.Default().Password)) {
