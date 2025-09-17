@@ -3,8 +3,8 @@
 # Define variables
 IMAGE_NAME="my-aggregator-image"
 CONTAINER_NAME="aggregator-container"
-HOST_PORT=8012
-CONTAINER_PORT=8012
+HOST_PORT=8011
+CONTAINER_PORT=8011
 
 # Navigate to the project root directory
 cd "$(dirname "$0")"

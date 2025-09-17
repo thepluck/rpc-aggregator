@@ -29,7 +29,7 @@ COPY --from=builder /app/aggregator /app/aggregator
 RUN chmod +x ./aggregator
 
 # Expose the port that the application listens on (if applicable)
-EXPOSE 8012
+EXPOSE 8011
 
 # Command to run the application
 CMD ["./aggregator/aggregator"]
